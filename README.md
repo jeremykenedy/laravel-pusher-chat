@@ -1,79 +1,282 @@
-<p align="center"><img src="https://res.cloudinary.com/dtfbvvkyp/image/upload/v1566331377/laravel-logolockup-cmyk-red.svg" width="400"></p>
+## Laravel Pusher Chat
+A super lightweight and very clean chat messaging web application built on laravel 7, VueJs, and Bootstrap 4. It users PusherJS, Laravel Broadcasting, Events, and Eloquent to clreat a real time chat room with online in chat users list and other users typing indicator with that users name.
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/d/total.svg" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/v/stable.svg" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://poser.pugx.org/laravel/framework/license.svg" alt="License"></a>
-</p>
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-## About Laravel
+#### Table of contents
+- [Features](#features)
+- [Installation Instructions](#installation-instructions)
+    - [Build the Front End Assets with Mix](#build-the-front-end-assets-with-mix)
+- [Routes](#routes)
+- [Environment File](#environment-file)
+- [File Tree](#file-tree)
+- [Laravel Pusher Chat License](#laravel-pusher-chat-license)
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+### Features
+| Laravel Pusher Chat Features  |
+| :------------ |
+|Built on [Laravel 7](https://laravel.com/), [Bootstrap 4](https://getbootstrap.com/)|
+|With [PusherJS](https://github.com/pusher/pusher-js), [Laravel Echo](https://laravel.com/docs/master/broadcasting#installing-laravel-echo), and [Vue.js](https://vuejs.org/)|
+|Real time instant messaging in a group chat|
+|Shows the name of other user typing while typing|
+|Shows users logged in and have the group chat open|
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+### Installation Instructions
+1. Run `git clone https://github.com/jeremykenedy/laravel-pusher-chat.git laravel-pusher-chat`
+2. Create a MySQL database for the project
+    * ```mysql -u root -p```, if using Vagrant: ```mysql -u homestead -psecret```
+    * ```create database pusherchat;```
+    * ```\q```
+3. From the projects root run `cp .env.example .env`
+4. Configure your `.env` file
+    * Create an account at [pusher.com](https://pusher.com/) to obtain your pusher api credentials for the `.env` file.
+    * Valid `.env` variables `PUSHER_APP_ID`, `PUSHER_APP_KEY`, `PUSHER_APP_SECRET`, `PUSHER_APP_CLUSTER` are required.
+    * You *must enable* **Force TLS** and **Enable client events** in your pusher channel in [pusher app settings](https://dashboard.pusher.com/apps).
+5. Run `composer update` from the projects root folder
+6. From the projects root folder run `php artisan key:generate`
+7. From the projects root folder run `php artisan migrate`
+8. From the projects root folder run `composer dump-autoload`
+9. Compile the front end assets with [npm steps](#using-npm) or [yarn steps](#using-yarn).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+#### Build the Front End Assets with Mix
+##### Using NPM:
+1. From the projects root folder run `npm install`
+2. From the projects root folder run `npm run dev` or `npm run production`
+  * You can watch assets with `npm run watch`
 
-## Learning Laravel
+##### Using Yarn:
+1. From the projects root folder run `yarn install`
+2. From the projects root folder run `yarn run dev` or `yarn run production`
+  * You can watch assets with `yarn run watch`
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+###### And thats it with the caveat of setting up and configuring your development environment. I recommend [Laravel Homestead](https://laravel.com/docs/master/homestead)
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 1500 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+### Routes
+```bash
++--------+---------------+------------------------+------------------+------------------------------------------------------------------------+--------------+
+| Domain | Method        | URI                    | Name             | Action                                                                 | Middleware   |
++--------+---------------+------------------------+------------------+------------------------------------------------------------------------+--------------+
+|        | GET|HEAD      | /                      |                  | Closure                                                                | web          |
+|        | GET|HEAD      | api/user               |                  | Closure                                                                | api,auth:api |
+|        | GET|POST|HEAD | broadcasting/auth      |                  | Illuminate\Broadcasting\BroadcastController@authenticate               | web          |
+|        | GET|HEAD      | chats                  | chats            | App\Http\Controllers\ChatController@index                              | web,auth     |
+|        | GET|HEAD      | home                   | home             | App\Http\Controllers\HomeController@index                              | web,auth     |
+|        | GET|HEAD      | login                  | login            | App\Http\Controllers\Auth\LoginController@showLoginForm                | web,guest    |
+|        | POST          | login                  |                  | App\Http\Controllers\Auth\LoginController@login                        | web,guest    |
+|        | POST          | logout                 | logout           | App\Http\Controllers\Auth\LoginController@logout                       | web          |
+|        | GET|HEAD      | messages               | fetchMessages    | App\Http\Controllers\ChatController@fetchAllMessages                   | web,auth     |
+|        | POST          | messages               | sendMessage      | App\Http\Controllers\ChatController@sendMessage                        | web,auth     |
+|        | GET|HEAD      | password/confirm       | password.confirm | App\Http\Controllers\Auth\ConfirmPasswordController@showConfirmForm    | web,auth     |
+|        | POST          | password/confirm       |                  | App\Http\Controllers\Auth\ConfirmPasswordController@confirm            | web,auth     |
+|        | POST          | password/email         | password.email   | App\Http\Controllers\Auth\ForgotPasswordController@sendResetLinkEmail  | web          |
+|        | POST          | password/reset         | password.update  | App\Http\Controllers\Auth\ResetPasswordController@reset                | web          |
+|        | GET|HEAD      | password/reset         | password.request | App\Http\Controllers\Auth\ForgotPasswordController@showLinkRequestForm | web          |
+|        | GET|HEAD      | password/reset/{token} | password.reset   | App\Http\Controllers\Auth\ResetPasswordController@showResetForm        | web          |
+|        | POST          | register               |                  | App\Http\Controllers\Auth\RegisterController@register                  | web,guest    |
+|        | GET|HEAD      | register               | register         | App\Http\Controllers\Auth\RegisterController@showRegistrationForm      | web,guest    |
++--------+---------------+------------------------+------------------+------------------------------------------------------------------------+--------------+
 
-## Laravel Sponsors
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+```
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- [UserInsights](https://userinsights.com)
-- [Fragrantica](https://www.fragrantica.com)
-- [SOFTonSOFA](https://softonsofa.com/)
-- [User10](https://user10.com)
-- [Soumettre.fr](https://soumettre.fr/)
-- [CodeBrisk](https://codebrisk.com)
-- [1Forge](https://1forge.com)
-- [TECPRESSO](https://tecpresso.co.jp/)
-- [Runtime Converter](http://runtimeconverter.com/)
-- [WebL'Agence](https://weblagence.com/)
-- [Invoice Ninja](https://www.invoiceninja.com)
-- [iMi digital](https://www.imi-digital.de/)
-- [Earthlink](https://www.earthlink.ro/)
-- [Steadfast Collective](https://steadfastcollective.com/)
-- [We Are The Robots Inc.](https://watr.mx/)
-- [Understand.io](https://www.understand.io/)
-- [Abdel Elrafa](https://abdelelrafa.com)
-- [Hyper Host](https://hyper.host)
-- [Appoly](https://www.appoly.co.uk)
-- [OP.GG](https://op.gg)
-- [云软科技](http://www.yunruan.ltd/)
+* Routes generate with `php artisan route:list`
 
-## Contributing
+### Environment File
+Example `.env` file:
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
 
-## Code of Conduct
+APP_NAME=LaravelPusherChat
+APP_ENV=local
+APP_KEY=
+APP_DEBUG=true
+APP_URL=http://localhost
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+LOG_CHANNEL=stack
 
-## Security Vulnerabilities
+DB_CONNECTION=mysql
+DB_HOST=127.0.0.1
+DB_PORT=3306
+DB_DATABASE=pusherchat
+DB_USERNAME=root
+DB_PASSWORD=
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+BROADCAST_DRIVER=pusher
+CACHE_DRIVER=file
+QUEUE_CONNECTION=sync
+SESSION_DRIVER=file
+SESSION_LIFETIME=120
 
-## License
+REDIS_HOST=127.0.0.1
+REDIS_PASSWORD=null
+REDIS_PORT=6379
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=null
+MAIL_PASSWORD=null
+MAIL_ENCRYPTION=null
+MAIL_FROM_ADDRESS=null
+MAIL_FROM_NAME="${APP_NAME}"
+
+AWS_ACCESS_KEY_ID=
+AWS_SECRET_ACCESS_KEY=
+AWS_DEFAULT_REGION=us-east-1
+AWS_BUCKET=
+
+PUSHER_APP_ID=
+PUSHER_APP_KEY=
+PUSHER_APP_SECRET=
+PUSHER_APP_CLUSTER=mt1
+
+MIX_PUSHER_APP_KEY="${PUSHER_APP_KEY}"
+MIX_PUSHER_APP_CLUSTER="${PUSHER_APP_CLUSTER}"
+
+
+```
+
+### File Tree
+```
+laravel-pusher-chat
+├── .editorconfig
+├── .env.example
+├── .gitattributes
+├── .gitignore
+├── .styleci.yml
+├── README.md
+├── app
+│   ├── Chat.php
+│   ├── Console
+│   │   └── Kernel.php
+│   ├── Events
+│   │   └── ChatSent.php
+│   ├── Exceptions
+│   │   └── Handler.php
+│   ├── Http
+│   │   ├── Controllers
+│   │   │   ├── Auth
+│   │   │   │   ├── ConfirmPasswordController.php
+│   │   │   │   ├── ForgotPasswordController.php
+│   │   │   │   ├── LoginController.php
+│   │   │   │   ├── RegisterController.php
+│   │   │   │   ├── ResetPasswordController.php
+│   │   │   │   └── VerificationController.php
+│   │   │   ├── ChatController.php
+│   │   │   ├── Controller.php
+│   │   │   └── HomeController.php
+│   │   ├── Kernel.php
+│   │   └── Middleware
+│   │       ├── Authenticate.php
+│   │       ├── CheckForMaintenanceMode.php
+│   │       ├── EncryptCookies.php
+│   │       ├── RedirectIfAuthenticated.php
+│   │       ├── TrimStrings.php
+│   │       ├── TrustHosts.php
+│   │       ├── TrustProxies.php
+│   │       └── VerifyCsrfToken.php
+│   ├── Listeners
+│   │   └── SendChatMessage.php
+│   ├── Providers
+│   │   ├── AppServiceProvider.php
+│   │   ├── AuthServiceProvider.php
+│   │   ├── BroadcastServiceProvider.php
+│   │   ├── EventServiceProvider.php
+│   │   └── RouteServiceProvider.php
+│   └── User.php
+├── artisan
+├── bootstrap
+│   ├── app.php
+│   └── cache
+│       ├── .gitignore
+│       ├── packages.php
+│       └── services.php
+├── composer.json
+├── composer.lock
+├── config
+│   ├── app.php
+│   ├── auth.php
+│   ├── broadcasting.php
+│   ├── cache.php
+│   ├── cors.php
+│   ├── database.php
+│   ├── filesystems.php
+│   ├── hashing.php
+│   ├── logging.php
+│   ├── mail.php
+│   ├── queue.php
+│   ├── services.php
+│   ├── session.php
+│   └── view.php
+├── database
+│   ├── .gitignore
+│   ├── factories
+│   │   └── UserFactory.php
+│   ├── migrations
+│   │   ├── 2014_10_12_000000_create_users_table.php
+│   │   ├── 2014_10_12_100000_create_password_resets_table.php
+│   │   ├── 2019_08_19_000000_create_failed_jobs_table.php
+│   │   └── 2020_05_24_122626_create_chats_table.php
+│   └── seeds
+│       └── DatabaseSeeder.php
+├── package-lock.json
+├── package.json
+├── phpunit.xml
+├── public
+│   ├── .htaccess
+│   ├── css
+│   │   └── app.css
+│   ├── favicon.ico
+│   ├── index.php
+│   ├── js
+│   │   ├── app.js
+│   │   └── app.js.LICENSE.txt
+│   ├── mix-manifest.json
+│   ├── report.html
+│   └── robots.txt
+├── resources
+│   ├── js
+│   │   ├── app.js
+│   │   ├── bootstrap.js
+│   │   └── components
+│   │       └── ChatComponent.vue
+│   ├── lang
+│   │   └── en
+│   │       ├── auth.php
+│   │       ├── pagination.php
+│   │       ├── passwords.php
+│   │       └── validation.php
+│   ├── sass
+│   │   ├── _variables.scss
+│   │   └── app.scss
+│   └── views
+│       ├── auth
+│       │   ├── login.blade.php
+│       │   ├── passwords
+│       │   │   ├── confirm.blade.php
+│       │   │   ├── email.blade.php
+│       │   │   └── reset.blade.php
+│       │   ├── register.blade.php
+│       │   └── verify.blade.php
+│       ├── chat
+│       │   └── chat.blade.php
+│       ├── home.blade.php
+│       ├── layouts
+│       │   └── app.blade.php
+│       └── welcome.blade.php
+├── routes
+│   ├── api.php
+│   ├── channels.php
+│   ├── console.php
+│   └── web.php
+├── server.php
+└── webpack.mix.js
+
+32 directories, 100 files
+```
+
+* Tree command can be installed using brew: `brew install tree`
+* File tree generated using command `tree -a -I '.git|.env|node_modules|vendor|storage|tests'`
+
+### Laravel Pusher Chat License
+Laravel Pusher Chat is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).

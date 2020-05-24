@@ -1,4 +1,6 @@
 const mix = require('laravel-mix');
+var LiveReloadPlugin = require('webpack-livereload-plugin');
+require('laravel-mix-bundle-analyzer');
 
 /*
  |--------------------------------------------------------------------------
@@ -11,5 +13,17 @@ const mix = require('laravel-mix');
  |
  */
 
-mix.js('resources/js/app.js', 'public/js')
+mix.webpackConfig({
+    plugins: [
+        new LiveReloadPlugin()
+    ]
+}).js('resources/js/app.js', 'public/js')
     .sass('resources/sass/app.scss', 'public/css');
+
+if (mix.inProduction()) {
+    mix.version();
+} else {
+    mix.sourceMaps();
+}
+
+// mix.bundleAnalyzer({analyzerMode: 'static'});

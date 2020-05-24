@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Chat;
+use App\Events\ChatSent;
 use Illuminate\Http\Request;
 
 class ChatController extends Controller
@@ -48,8 +49,7 @@ class ChatController extends Controller
         $chat = auth()->user()->messages()->create([
             'message' => $request->message
         ]);
-
-        broadcast(new ChatEvent($chat->load('user')))->toOthers();
+        broadcast(new ChatSent($chat->load('user')))->toOthers();
 
         return ['status' => 'success'];
     }
